@@ -43,7 +43,43 @@
     let PATH;
     let CMD;
     let NUM = -1;
+    let LIST = [];
     const CACHE = [];
+    const COMMANDS = [
+        'cat',
+        'cd',
+        'chdir',
+        'cipher',
+        'cls',
+        'cmd',
+        'date',
+        'del',
+        'dispdiag',
+        'echo',
+        'erase',
+        'exit',
+        'find',
+        'findstr',
+        'getmac',
+        'ipconfig',
+        'hostname',
+        'klist',
+        'ls',
+        'md',
+        'mkdir',
+        'more',
+        'nslookup',
+        'path',
+        'rd',
+        'ren',
+        'rename',
+        'rmdir',
+        'time',
+        'type',
+        'ver',
+        'vol',
+        'whoami'
+    ];
 
     function get_path() {
         const path = document.querySelector("#path");
@@ -57,6 +93,7 @@
             const response = new Response(data);
             if (response.isOk()) {
                 PATH = data.result;
+                LIST = data.list;
                 path.textContent = PATH;
             }
         });
@@ -88,6 +125,7 @@
             const response = new Response(data);
             if (response.isOk()) {
                 PATH = data.result;
+                LIST = data.list;
                 path.textContent = PATH;
             } else {
                 add_result(response.getText());
@@ -178,7 +216,31 @@
 
     function on_tab(event) {
         event.preventDefault();
-        console.log('tab todo');
+        const value = this.value;
+        if (value.indexOf(" ") === -1) {
+            for (let cmd of COMMANDS) {
+                if (cmd.indexOf(value) === 0) {
+                    CMD.value = cmd + " ";
+                    break;
+                }
+            }
+        } else {
+            const tmp = value.replace(/\s+/, " ").split(" ");
+            const cmd = tmp[0];
+            const search = tmp[1];
+            const found = [];
+            for (let filename of LIST) {
+                if (filename !== search && filename.indexOf(search) === 0) {
+                    found.push(filename);
+                }
+            }
+            if (found.length === 1) {
+                CMD.value = [cmd, found[0]].join(" ");
+            } else if (found.length > 1) {
+                add_result(PATH + ">" + value, true);
+                add_result(found.join("\n"), false);
+            }
+        }
     }
 
     function cmd_cache() {
@@ -276,7 +338,7 @@
             const response = new Response(data);
             if (response.isOk()) {
                 add_result(data.result, false);
-                //get_path();
+                LIST = data.list;
             } else {
                 add_result(response.getText());
             }

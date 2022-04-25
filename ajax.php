@@ -21,7 +21,7 @@ if (isset($_GET['do']))
             {
                 cli::json(array('status' => 'ERR', 'code' => 100, 'text' => 'Execute an external program is disabled.'));
             }
-            cli::json(array('status' => 'OK', 'code' => 200, 'text' => 'Success', 'result' => $_SESSION['path']));
+            cli::json(array('status' => 'OK', 'code' => 200, 'text' => 'Success', 'result' => $_SESSION['path'], 'list' => @scandir($_SESSION['path'])));
             break;
         case 'set_path':
             $path = trim($_POST['path']);
@@ -29,7 +29,7 @@ if (isset($_GET['do']))
             if (@chdir($path))
             {
                 $_SESSION['path'] = getcwd();
-                $data = array('status' => 'OK', 'code' => 200, 'text' => 'Success', 'result' => $_SESSION['path']);
+                $data = array('status' => 'OK', 'code' => 200, 'text' => 'Success', 'result' => $_SESSION['path'], 'list' => @scandir($_SESSION['path']));
             } else {
                 if (preg_match('/^[a-z]:/i', $path)) {
                     $data = array('status' => 'ERR', 'code' => 100, 'text' => 'The filename, directory name, or volume label syntax is incorrect.');
@@ -53,9 +53,11 @@ if (isset($_GET['do']))
                 if ($result_code == 0)
                 {
                     $result = join("\n", $result);
-                    $data = array('status' => 'OK', 'code' => 200, 'text' => 'Success', 'result' => $result, 'result_code' => $result_code);
+                    $data = array('status' => 'OK', 'code' => 200, 'text' => 'Success', 'result' => $result, 'result_code' => $result_code, 'list' => @scandir($_SESSION['path']));
                 } else {
-                    $data = array('status' => 'ERR', 'code' => 100, 'text' => sprintf("'%s' is not recognized as an internal or external command, operable program or batch file.", $cmd));
+                    $data = array('status' => 'ERR', 'code' => 100,
+                        'text' => sprintf("'%s' is not recognized as an internal or external command, operable program or batch file.", $cmd),
+                        'result_code' => $result_code);
                 }
             }
 
