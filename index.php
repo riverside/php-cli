@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PHP Command-line interface</title>
-    <link rel="stylesheet" href="cli.css">
+    <link rel="stylesheet" href="assets/css/main.css">
     <link rel="shortcut icon" href="favicon.ico">
 </head>
 <body>
@@ -17,6 +17,6 @@
             </div>
         </div>
     </div>
-    <script src="cli.js"></script>
+    <script src="assets/js/main.js"></script>
 </body>
 </html>
