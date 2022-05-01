@@ -40,12 +40,64 @@
         };
     })();
 
+	let OS;
     let PATH;
     let CMD;
     let NUM = -1;
     let LIST = [];
+	let COMMANDS;
     const CACHE = [];
-    const COMMANDS = [
+	const BSD_COMMANDS = [];
+	const DARWIN_COMMANDS = [];
+	const LINUX_COMMANDS = [
+		'cal',
+		'cat',
+		'cd',
+		'chgrp',
+		'chmod',
+		'chown',
+		'cp',
+		'crontab',
+		'df',
+		'dir',
+		'du',
+		'echo',
+		'file',
+		'find',
+		'free',
+		'grep',
+		'groups',
+		'head',
+		'hostname',
+		'id',
+		'less',
+		'locate',
+		'ls',
+		'man',
+		'mkdir',
+		'more',
+		'mv',
+		'printenv',
+		'printf',
+		'ps',
+		'pwd',
+		'rm',
+		'rmdir',
+		'sudo',
+		'sum',
+		'tail',
+		'times',
+		'touch',
+		'type',
+		'uname',
+		'uptime',
+		'w',
+		'wc',
+		'whereis',
+		'whoami',
+	];
+	const SOLARIS_COMMANDS = [];
+    const WIN_COMMANDS = [
         'cat',
         'cd',
         'chdir',
@@ -81,6 +133,66 @@
         'whoami'
     ];
 
+	function is_bsd() {
+        return OS == 'BSD';
+    }
+
+    function is_darwin() {
+        return OS == 'Darwin';
+    }
+
+    function is_linux() {
+        return OS == 'Linux';
+    }
+
+    function is_solaris() {
+        return OS == 'Solaris';
+    }
+
+    function is_unknown() {
+        return OS == 'Unknown';
+    }
+
+    function is_win() {
+        return OS == 'Windows';
+    }
+
+	function apply_data(data) {
+		PATH = data.result;
+		LIST = data.list;
+		OS = data.os;
+		path.textContent = PATH;
+		COMMANDS = get_commands();
+	}
+
+	function get_commands() {
+		let commands;
+
+		switch (true) {
+		case is_bsd():
+			commands = BSD_COMMANDS;
+			break;
+		case is_darwin():
+			commands = DARWIN_COMMANDS;
+			break;
+		case is_linux():
+			commands = LINUX_COMMANDS;
+			break;
+		case is_solaris():
+			commands = SOLARIS_COMMANDS;
+			break;
+		case is_win():
+			commands = WIN_COMMANDS;
+			break;
+		case is_unknown():
+		default:
+			commands = [];
+			break;
+		}
+
+		return commands;
+	}
+
     function get_path() {
         const path = document.querySelector("#path");
         if (!path) {
@@ -92,9 +204,7 @@
         }).then(function(data) {
             const response = new Response(data);
             if (response.isOk()) {
-                PATH = data.result;
-                LIST = data.list;
-                path.textContent = PATH;
+				apply_data(data);
             }
         });
     }
@@ -124,9 +234,7 @@
             add_result(val, true);
             const response = new Response(data);
             if (response.isOk()) {
-                PATH = data.result;
-                LIST = data.list;
-                path.textContent = PATH;
+                apply_data(data);
             } else {
                 add_result(response.getText());
             }
@@ -164,7 +272,7 @@
         if (value === "" || /^cd\s*(\.\/?)?$/i.test(value)) {
             add_result( PATH + ">" + value, true);
             to_bottom();
-        } else if (/^cls$/i.test(value)) {
+        } else if (/^(?:cls|clear)$/i.test(value)) {
             clear_result();
         } else if (/^cd\s*/i.test(value)) {
             set_path(value.replace(/^cd\s*/i, ""));
@@ -329,7 +437,6 @@
             method: "POST",
             body: fd
         }).then(function(response) {
-            console.log(response);
             return response.json();
         }).then(function (data) {
             CMD.disabled = false;
@@ -367,7 +474,7 @@
 
         const el = document.createElement("div");
         el.className = is_cmd ? "r-cmd" : "r-output";
-        el.innerHTML = value.replace(/\n/g, "<br>");
+        el.innerHTML = value.replace(/\n/g, "<br>").replace(/\s/g, "&nbsp;");
         result.appendChild(el);
     }
     
