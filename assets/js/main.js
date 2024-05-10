@@ -134,27 +134,27 @@
     ];
 
 	function is_bsd() {
-        return OS == 'BSD';
+        return OS === 'BSD';
     }
 
     function is_darwin() {
-        return OS == 'Darwin';
+        return OS === 'Darwin';
     }
 
     function is_linux() {
-        return OS == 'Linux';
+        return OS === 'Linux';
     }
 
     function is_solaris() {
-        return OS == 'Solaris';
+        return OS === 'Solaris';
     }
 
     function is_unknown() {
-        return OS == 'Unknown';
+        return OS === 'Unknown';
     }
 
     function is_win() {
-        return OS == 'Windows';
+        return OS === 'Windows';
     }
 
 	function apply_data(data) {
@@ -199,13 +199,19 @@
             return;
         }
 
-        fetch("ajax.php?do=get_path").then(function(response) {
-            return response.json();
+        fetch("ajax.php?do=get_path", {
+            headers: {
+                "Accept": "application/json; charset=utf-8"
+            }
+        }).then(function(response) {
+            return response.ok ? response.json() : Promise.reject(response);
         }).then(function(data) {
             const response = new Response(data);
             if (response.isOk()) {
 				apply_data(data);
             }
+        }).catch(function (reason) {
+            console.warn(reason);
         });
     }
 
@@ -220,9 +226,13 @@
 
         fetch("ajax.php?do=set_path", {
             method: "POST",
-            body: fd
+            headers: {
+                "Accept": "application/json; charset=utf-8",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams(fd).toString()
         }).then(function(response) {
-            return response.json();
+            return response.ok ? response.json() : Promise.reject(response);
         }).then(function(data) {
             let val;
             if (/^[a-z]:$/i.test(value)) {
@@ -239,6 +249,8 @@
                 add_result(response.getText());
             }
             to_bottom();
+        }).catch(function (reason) {
+            console.warn(reason);
         });
     }
 
@@ -435,9 +447,13 @@
 
         fetch("ajax.php?do=send_cmd", {
             method: "POST",
-            body: fd
+            headers: {
+                "Accept": "application/json; charset=utf-8",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams(fd).toString()
         }).then(function(response) {
-            return response.json();
+            return response.ok ? response.json() : Promise.reject(response);
         }).then(function (data) {
             CMD.disabled = false;
             cmd_focus();
@@ -450,7 +466,9 @@
                 add_result(response.getText());
             }
             to_bottom();
-        })
+        }).catch(function(reason) {
+            console.warn(reason);
+        });
     }
 
     function clear_result() {
